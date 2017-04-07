@@ -10,7 +10,9 @@ import (
 	"platform/platformlib"
 )
 
-func GetAllAppHandler(w http.ResponseWriter, r *http.Request) {}
+func GetAllAppHandler(w http.ResponseWriter, r *http.Request) {
+	platformlib.GetAllApp()
+}
 
 func GetAppHandler(w http.ResponseWriter, r *http.Request) {}
 

@@ -18,7 +18,7 @@ func CreateDeployment(apiserver string, ns string, body io.Reader) *http.Respons
 		"application/json",
 		body)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -31,12 +31,12 @@ func DeleteDeployment(apiserver string, ns string, name string) *http.Response {
 		apiserver+"/apis/apps/v1beta1/namespaces/"+ns+"/deployments/"+name,
 		nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -45,7 +45,7 @@ func DeleteDeployment(apiserver string, ns string, name string) *http.Response {
 func ReadDeployment(apiserver string, ns string, name string) *http.Response {
 	resp, err := http.Get(apiserver + "/apis/apps/v1beta1/namespaces/" + ns + "/deployments/" + name)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -54,7 +54,7 @@ func ReadDeployment(apiserver string, ns string, name string) *http.Response {
 func ListDeployment(apiserver string, ns string) *http.Response {
 	resp, err := http.Get(apiserver + "/apis/apps/v1beta1/namespaces/" + ns + "/deployments")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -74,7 +74,7 @@ func CreateService(apiserver string, ns string, body io.Reader) *http.Response {
 		"application/json",
 		body)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -87,12 +87,12 @@ func DeleteService(apiserver string, ns string, name string) *http.Response {
 		apiserver+"/api/v1/namespaces/"+ns+"/services/"+name,
 		nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -101,7 +101,7 @@ func DeleteService(apiserver string, ns string, name string) *http.Response {
 func ReadService(apiserver string, ns string, name string) *http.Response {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/services/" + name)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -110,7 +110,7 @@ func ReadService(apiserver string, ns string, name string) *http.Response {
 func ListService(apiserver string, ns string) *http.Response {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/services")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -128,7 +128,7 @@ func CreatePersistentVolumeClaim(apiserver string, ns string, body io.Reader) *h
 		"application/json",
 		body)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -141,12 +141,12 @@ func DeletePersistentVolumeClaim(apiserver string, ns string, name string) *http
 		apiserver+"/api/v1/namespaces/"+ns+"/persistentvolumeclaims/"+name,
 		nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -155,7 +155,7 @@ func DeletePersistentVolumeClaim(apiserver string, ns string, name string) *http
 func ReadPersistentVolumeClaim(apiserver string, ns string, name string) *http.Response {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/persistentvolumeclaims/" + name)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -164,7 +164,60 @@ func ReadPersistentVolumeClaim(apiserver string, ns string, name string) *http.R
 func ListPersistentVolumeClaim(apiserver string, ns string) *http.Response {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/persistentvolumeclaims")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+	}
+	return resp
+}
+
+// Namespace provides a scope for Names. Use of multiple namespaces is optional.
+//
+// For more information, please check the official documentation:
+//   https://kubernetes.io/docs/api-reference/v1.6/#namespace-v1-core
+
+// Create a Namespace
+func CreateNamespace(apiserver string, body io.Reader) *http.Response {
+	resp, err := http.Post(
+		apiserver+"/api/v1/namespaces",
+		"application/json",
+		body)
+	if err != nil {
+		log.Println(err)
+	}
+	return resp
+}
+
+// Delete a Namespace
+func DeleteNamespace(apiserver string, name string) *http.Response {
+	client := &http.Client{}
+	req, err := http.NewRequest(
+		"DELETE",
+		apiserver+"/api/v1/namespaces/"+name,
+		nil)
+	if err != nil {
+		log.Println(err)
+	}
+	req.Header.Add("If-None-Match", `W/"wyzzy"`)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+	return resp
+}
+
+// Read the specified Namespace
+func ReadNamespace(apiserver string, name string) *http.Response {
+	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + name)
+	if err != nil {
+		log.Println(err)
+	}
+	return resp
+}
+
+// List or watch objects of kind Namespace
+func ListNamespace(apiserver string) *http.Response {
+	resp, err := http.Get(apiserver + "/api/v1/namespaces")
+	if err != nil {
+		log.Println(err)
 	}
 	return resp
 }
@@ -182,7 +235,7 @@ func CreatePersistentVolume(apiserver string, body io.Reader) *http.Response {
 		"application/json",
 		body)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -195,12 +248,12 @@ func DeletePersistentVolume(apiserver string, name string) *http.Response {
 		apiserver+"/api/v1/persistentvolumes/"+name,
 		nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -209,7 +262,7 @@ func DeletePersistentVolume(apiserver string, name string) *http.Response {
 func ReadPersistentVolume(apiserver string, name string) *http.Response {
 	resp, err := http.Get(apiserver + "/api/v1/persistentvolumes/" + name)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
@@ -218,7 +271,7 @@ func ReadPersistentVolume(apiserver string, name string) *http.Response {
 func ListPersistentVolume(apiserver string) *http.Response {
 	resp, err := http.Get(apiserver + "/api/v1/persistentvolumes")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	return resp
 }
