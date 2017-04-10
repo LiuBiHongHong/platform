@@ -11,23 +11,52 @@ import (
 )
 
 func GetAllAppHandler(w http.ResponseWriter, r *http.Request) {
-	platformlib.GetAllApp()
+	_, err := platformlib.GetAllApp()
+	if err != nil {
+		log.Println(err)
+	}
 }
 
-func GetAppHandler(w http.ResponseWriter, r *http.Request) {}
+func GetAppHandler(w http.ResponseWriter, r *http.Request) {
+	id := path.Base(r.URL.Path)
+	_, err := platformlib.GetApp(id)
+	if err != nil {
+		log.Println(err)
+	}
+}
 
 func StartAppHandler(w http.ResponseWriter, r *http.Request) {}
 
-func DeleteAppHandler(w http.ResponseWriter, r *http.Request) {}
+func DeleteAppHandler(w http.ResponseWriter, r *http.Request) {
+	id := path.Base(r.URL.Path)
+	err := platformlib.DeleteApp(id)
+	if err != nil {
+		log.Println(err)
+	}
+}
 
 func DownloadAppHandler(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
-	platformlib.DownloadApp(id)
+	_, err := platformlib.DownloadApp(id)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
-func GetAllItemHandler(w http.ResponseWriter, r *http.Request) {}
+func GetAllItemHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := platformlib.GetAllItem()
+	if err != nil {
+		log.Println(err)
+	}
+}
 
-func GetItemHandler(w http.ResponseWriter, r *http.Request) {}
+func GetItemHandler(w http.ResponseWriter, r *http.Request) {
+	id := path.Base(r.URL.Path)
+	_, err := platformlib.GetItem(id)
+	if err != nil {
+		log.Println(err)
+	}
+}
 
 func GetAllServiceHandler(w http.ResponseWriter, r *http.Request) {}
 
@@ -40,13 +69,13 @@ func main() {
 	router.HandleFunc("/app", GetAllAppHandler).Methods("GET")
 	router.HandleFunc("/app/{id}", GetAppHandler).Methods("GET")
 	router.HandleFunc("/startapp", StartAppHandler).Methods("POST")
-	router.HandleFunc("/deleteapp", DeleteAppHandler).Methods("GET")
+	router.HandleFunc("/deleteapp/{id}", DeleteAppHandler).Methods("DELETE")
 	router.HandleFunc("/downloadapp/{id}", DownloadAppHandler).Methods("GET")
 	router.HandleFunc("/item", GetAllItemHandler).Methods("GET")
-	router.HandleFunc("/item/{}", GetItemHandler).Methods("GET")
+	router.HandleFunc("/item/{id}", GetItemHandler).Methods("GET")
 	router.HandleFunc("/service", GetAllServiceHandler).Methods("GET")
 	router.HandleFunc("/service/{id}", GetServiceHandler).Methods("GET")
-	router.HandleFunc("/deleteservice", DeleteServiceHandler).Methods("DELETE")
+	router.HandleFunc("/deleteservice/{id}", DeleteServiceHandler).Methods("DELETE")
 
 	// Cross-origin resource sharing
 	handler := cors.New(cors.Options{

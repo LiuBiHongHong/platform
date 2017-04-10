@@ -2,9 +2,11 @@ package platformlib
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -22,6 +24,27 @@ var (
 	items []*Item
 )
 
+func init() {
+	apps = make([]*App, 0)
+	items = make([]*Item, 0)
+}
+
+// Error returns the formatted not found error.
+type NotFoundError string
+
+// NotFoundError denotes failing to find a service, an app or an item.
+func (e NotFoundError) Error() string {
+	return fmt.Sprintf("%s not found", e)
+}
+
+// Error returns the formatted download error.
+type DownloadError string
+
+// DownloadError denotes encountering an error while trying to download an app.
+func (e DownloadError) Error() string {
+	return fmt.Sprintf("%s download failed", e)
+}
+
 type App struct {
 	Id          string        `json:"id"`
 	Name        string        `json:"name"`
@@ -29,19 +52,19 @@ type App struct {
 	Author      string        `json:"author"`
 	PictureUrl  string        `json:"pictureUrl"`
 	Description string        `json:"description"`
-	Size        int64         `json:"size"`
+	Size        int           `json:"size"`
 	Configs     []interface{} `json:"configs"`
 
 	// Status code of an app
 	//
 	// 100: ready
+	// 98: have not been visited
 	// 80: starting a service
 	// 77: error happened when starting a service
 	// 50: on deleting
 	// 22: error happened when deleting
-	// 10: has been successfully deleted
 	// 0: initialized
-	Status int64 `json:"status"`
+	Status int `json:"status"`
 }
 
 type Item struct {
@@ -57,14 +80,8 @@ type Item struct {
 	// 100: has been already downloaded
 	// 80: on downloading
 	// 77: error happened when downloading
-	// 10: not installed
 	// 0: initialized
-	Status int64 `json:"status"`
-}
-
-func init() {
-	apps = make([]*App, 0)
-	items = make([]*Item, 0)
+	Status int `json:"status"`
 }
 
 func NewApp() *App {
@@ -80,19 +97,107 @@ func NewItem() *Item {
 	return i
 }
 
-func GetAllApp() {}
+func GetAllApp() ([]*App, error) {
+	// Check if apps is empty. If apps is empty, get apps from the database then
+	// return it. Otherwise, return apps.
+	if len(apps) == 0 {
+		session, err := mgo.Dial(mongo)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		defer session.Close()
+		session.SetMode(mgo.Monotonic, true)
+		c := session.DB("dorry").C("app")
+		result := []App{}
+		err = c.Find(bson.M{}).All(&result)
 
-func GetApp() {}
+		// Initialize the apps
+		for _, d := range result {
+			var a *App
+			a = NewApp()
+			err := mapstructure.Decode(d, &a)
+			if err != nil {
+				log.Println(err)
+				return nil, err
+			}
+			a.Status = 100
+			apps = append(apps, a)
+		}
+	}
+	fmt.Println(apps)
+	return apps, nil
+}
 
-func StartApp() {}
+func GetApp(id string) (*App, error) {
+	if len(apps) == 0 {
+		GetAllApp()
+	}
 
-func DeleteApp() {}
+	for _, a := range apps {
+		if a.Id == id {
+			fmt.Println(a)
+			a.Status = 100
+			return a, nil
+		}
+	}
+	return nil, NotFoundError(id)
+}
+
+func StartApp() {
+	// TODO
+}
+
+func DeleteApp(id string) error {
+	if len(apps) == 0 {
+		GetAllApp()
+	}
+
+	session, err := mgo.Dial(mongo)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("dorry").C("app")
+	result := App{}
+	err = c.Find(bson.M{"id": id}).One(&result)
+	if err == mgo.ErrNotFound {
+		log.Println(err)
+		return err
+	} else {
+		err := c.Remove(bson.M{"id": id})
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	for i, a := range apps {
+		if a.Id == id {
+			copy(apps[i:], apps[i+1:])
+			apps[len(apps)-1] = nil
+			apps = apps[:len(apps)-1]
+			a = nil
+			return nil
+		}
+	}
+	return NotFoundError(id)
+}
 
 func DownloadApp(id string) (*App, error) {
 	// Check if apps is empty
 	if len(apps) == 0 {
-		// TODO: Call GetAllApp() here if apps is empty.
+		GetAllApp()
 	}
+
+	// Set the status of downloading item in market.
+	i, err := GetItem(id)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	i.Status = 80
 
 	resp, err := http.Get(market + "/api/getapp/" + id)
 	if err != nil {
@@ -122,7 +227,6 @@ func DownloadApp(id string) (*App, error) {
 	a.Description = data["description"].(string)
 	a.Configs = data["configs"].([]interface{})
 
-	// Connect to mongodb
 	session, err := mgo.Dial(mongo)
 	if err != nil {
 		log.Println(err)
@@ -131,28 +235,78 @@ func DownloadApp(id string) (*App, error) {
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB("dorry").C("app")
-
 	result := App{}
 	err = c.Find(bson.M{"id": a.Id}).One(&result)
 	if err == mgo.ErrNotFound {
 		err = c.Insert(a)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return nil, err
 		}
 		apps = append(apps, a)
 	} else {
-		log.Println(a.Name + " already exists")
+		fmt.Printf("%s already exists\n", a.Name)
 	}
-	a.Status = 100
+	a.Status = 98
+	i.Status = 100
 	return a, nil
 }
 
-func GetAllItem() {}
+func GetAllItem() ([]*Item, error) {
+	// Check if apps is empty
+	if len(apps) == 0 {
+		GetAllApp()
+	}
 
-func GetItem() {}
+	// Check if items is empty. If items is empty, send a request to get items
+	// from the server then return it. Otherwise, return items.
+	if len(items) == 0 {
+		resp, err := http.Get(market + "/api/listallapp")
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		var data map[string][]map[string]interface{}
+		dec := json.NewDecoder(resp.Body)
+		if err := dec.Decode(&data); err != nil {
+			log.Println(err)
+			return nil, err
+		}
 
-func GetAllService() {}
+		// Initialize the items
+		for _, d := range data["res"] {
+			var i *Item
+			i = NewItem()
+			err := mapstructure.Decode(d, &i)
+			if err != nil {
+				log.Println(err)
+				return nil, err
+			}
 
-func GetService() {}
+			// TODO: Set the status of downloaded items to 100.
 
-func DeleteService() {}
+			items = append(items, i)
+		}
+	}
+	fmt.Println(items)
+	return items, nil
+}
+
+func GetItem(id string) (*Item, error) {
+	if len(items) == 0 {
+		GetAllItem()
+	}
+
+	for _, i := range items {
+		if i.Id == id {
+			fmt.Println(i)
+			return i, nil
+		}
+	}
+	return nil, NotFoundError(id)
+}
