@@ -1,13 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"path"
 
 	"github.com/gorilla/mux"
+	"github.com/liubihonghong/platform"
 	"github.com/rs/cors"
-	"platform"
 )
 
 func GetAllAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +16,7 @@ func GetAllAppHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(apps)
+	fmt.Println(apps)
 }
 
 func GetAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +25,7 @@ func GetAppHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(a)
+	fmt.Println(a)
 }
 
 func StartAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,7 @@ func StartAppHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(a)
+	fmt.Println(a)
 }
 
 func DeleteAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +51,7 @@ func DownloadAppHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(a)
+	fmt.Println(a)
 }
 
 func GetAllItemHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +59,7 @@ func GetAllItemHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(items)
+	fmt.Println(items)
 }
 
 func GetItemHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +68,7 @@ func GetItemHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(i)
+	fmt.Println(i)
 }
 
 func GetAllServiceHandler(w http.ResponseWriter, r *http.Request) {}
@@ -89,7 +90,15 @@ func main() {
 	router.HandleFunc("/service/{id}", GetServiceHandler).Methods("GET")
 	router.HandleFunc("/service/delete/{id}", DeleteServiceHandler).Methods("DELETE")
 
-	// Cross-origin resource sharing
+	router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		a, _ := platform.GetApp("6af06892-369d-4f2a-9a63-668b9f9e2044")
+		t, err := platform.SetConfigField(a.Configs)
+		if err != nil {
+			log.Println(err)
+		}
+		fmt.Println(t)
+	}).Methods("GET")
+
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "DELETE"},

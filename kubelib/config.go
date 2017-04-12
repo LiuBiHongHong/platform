@@ -1,20 +1,5 @@
 package kubelib
 
-import (
-	"fmt"
-	"log"
-
-	"github.com/mitchellh/mapstructure"
-)
-
-// Error returns the config parsing error.
-type ConfigError string
-
-// ConfigError denotes encountering an error while trying to parsing configs.
-func (e ConfigError) Error() string {
-	return fmt.Sprintf("%s config parsing failed", string(e))
-}
-
 type Deployment struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
@@ -152,56 +137,4 @@ type PersistentVolume struct {
 			Path string `json:"path"`
 		} `json:"hostPath"`
 	} `json:"spec"`
-}
-
-func ParseConfig(data []interface{}) ([]interface{}, error) {
-	var configs []interface{}
-	configs = make([]interface{}, 0)
-	for _, c := range data {
-		switch k := c.(map[string]interface{})["kind"].(string); k {
-		case "Deployment":
-			var deploy Deployment
-			err := mapstructure.Decode(c, &deploy)
-			if err != nil {
-				log.Println(err)
-				return nil, ConfigError(k)
-			}
-			configs = append(configs, deploy)
-		case "Service":
-			var svc Service
-			err := mapstructure.Decode(c, &svc)
-			if err != nil {
-				log.Println(err)
-				return nil, ConfigError(k)
-			}
-			configs = append(configs, svc)
-		case "PersistentVolumeClaim":
-			var pvc PersistentVolumeClaim
-			err := mapstructure.Decode(c, &pvc)
-			if err != nil {
-				log.Println(err)
-				return nil, ConfigError(k)
-			}
-			configs = append(configs, pvc)
-		case "Namespace":
-			var ns Namespace
-			err := mapstructure.Decode(c, &ns)
-			if err != nil {
-				log.Println(err)
-				return nil, ConfigError(k)
-			}
-			configs = append(configs, ns)
-		case "PersistentVolume":
-			var pv PersistentVolume
-			err := mapstructure.Decode(c, &pv)
-			if err != nil {
-				log.Println(err)
-				return nil, ConfigError(k)
-			}
-			configs = append(configs, pv)
-		default:
-			return nil, ConfigError(k)
-		}
-	}
-	return configs, nil
 }
