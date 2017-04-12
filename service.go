@@ -1,4 +1,4 @@
-package platformlib
+package platform
 
 func GetAllService() {
 	// TODO

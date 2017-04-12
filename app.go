@@ -1,14 +1,17 @@
-package platformlib
+package platform
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"platform/kubelib"
 )
 
 var (
@@ -30,19 +33,37 @@ func init() {
 }
 
 // Error returns the formatted not found error.
-type NotFoundError string
+type NotFoundError struct {
+	id   string
+	kind string
+}
 
 // NotFoundError denotes failing to find a service, an app or an item.
 func (e NotFoundError) Error() string {
-	return fmt.Sprintf("%s not found", e)
+	return fmt.Sprintf("%s %s not found", string(e.id), string(e.kind))
 }
 
-// Error returns the formatted download error.
-type DownloadError string
+// Error returns the formatted docker image download error.
+type DownloadError struct {
+	id    string
+	image string
+}
 
-// DownloadError denotes encountering an error while trying to download an app.
+// DownloadError denotes encountering an error while trying to download docker
+// images of an app.
 func (e DownloadError) Error() string {
-	return fmt.Sprintf("%s download failed", e)
+	return fmt.Sprintf("%s %s download failed", string(e.id), string(e.image))
+}
+
+// Error returns the formatted app start error.
+type StartError struct {
+	id   string
+	kind string
+}
+
+// StartError denotes encountering an error while trying to start an app.
+func (e StartError) Error() string {
+	return fmt.Sprintf("%s %s start failed", string(e.id), string(e.kind))
 }
 
 type App struct {
@@ -109,7 +130,7 @@ func GetAllApp() ([]*App, error) {
 		defer session.Close()
 		session.SetMode(mgo.Monotonic, true)
 		c := session.DB("dorry").C("app")
-		result := []App{}
+		var result []map[string]interface{}
 		err = c.Find(bson.M{}).All(&result)
 
 		// Initialize the apps
@@ -121,11 +142,15 @@ func GetAllApp() ([]*App, error) {
 				log.Println(err)
 				return nil, err
 			}
+			a.Configs, err = kubelib.ParseConfig(d["configs"].([]interface{}))
+			if err != nil {
+				log.Println(err)
+				return nil, err
+			}
 			a.Status = 100
 			apps = append(apps, a)
 		}
 	}
-	fmt.Println(apps)
 	return apps, nil
 }
 
@@ -136,16 +161,139 @@ func GetApp(id string) (*App, error) {
 
 	for _, a := range apps {
 		if a.Id == id {
-			fmt.Println(a)
 			a.Status = 100
 			return a, nil
 		}
 	}
-	return nil, NotFoundError(id)
+	return nil, NotFoundError{id, "app"}
 }
 
-func StartApp() {
-	// TODO
+func StartApp(id string) (*App, error) {
+	if len(apps) == 0 {
+		GetAllApp()
+	}
+
+	for _, a := range apps {
+		if a.Id == id {
+			a.Status = 80
+			for _, c := range a.Configs {
+				switch k := structs.Map(c)["Kind"].(string); k {
+				case "Deployment":
+					var b bytes.Buffer
+					enc := json.NewEncoder(&b)
+					err := enc.Encode(&c)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					resp, err := kubelib.CreateDeployment(apiserver, c.(kubelib.Deployment).Metadata.Namespace, &b)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					var data map[string]interface{}
+					dec := json.NewDecoder(resp.Body)
+					if err := dec.Decode(&data); err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					if data["code"] != nil && data["code"].(float64) >= 400 {
+						return nil, StartError{id, k}
+					}
+				case "Service":
+					var b bytes.Buffer
+					enc := json.NewEncoder(&b)
+					err := enc.Encode(&c)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					resp, err := kubelib.CreateService(apiserver, c.(kubelib.Service).Metadata.Namespace, &b)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					var data map[string]interface{}
+					dec := json.NewDecoder(resp.Body)
+					if err := dec.Decode(&data); err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					if data["code"] != nil && data["code"].(float64) >= 400 {
+						return nil, StartError{id, k}
+					}
+				case "PersistentVolumeClaim":
+					var b bytes.Buffer
+					enc := json.NewEncoder(&b)
+					err := enc.Encode(&c)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					resp, err := kubelib.CreatePersistentVolumeClaim(apiserver, c.(kubelib.PersistentVolumeClaim).Metadata.Namespace, &b)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					var data map[string]interface{}
+					dec := json.NewDecoder(resp.Body)
+					if err := dec.Decode(&data); err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					if data["code"] != nil && data["code"].(float64) >= 400 {
+						return nil, StartError{id, k}
+					}
+				case "Namespace":
+					var b bytes.Buffer
+					enc := json.NewEncoder(&b)
+					err := enc.Encode(&c)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					resp, err := kubelib.CreateNamespace(apiserver, &b)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					var data map[string]interface{}
+					dec := json.NewDecoder(resp.Body)
+					if err := dec.Decode(&data); err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					if data["code"] != nil && data["code"].(float64) >= 400 {
+						return nil, StartError{id, k}
+					}
+				case "PersistentVolume":
+					var b bytes.Buffer
+					enc := json.NewEncoder(&b)
+					err := enc.Encode(&c)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					resp, err := kubelib.CreatePersistentVolume(apiserver, &b)
+					if err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					var data map[string]interface{}
+					dec := json.NewDecoder(resp.Body)
+					if err := dec.Decode(&data); err != nil {
+						log.Println(err)
+						return nil, err
+					}
+					if data["code"] != nil && data["code"].(float64) >= 400 {
+						return nil, StartError{id, k}
+					}
+				}
+			}
+			return a, nil
+		}
+	}
+	return nil, NotFoundError{id, "app"}
 }
 
 func DeleteApp(id string) error {
@@ -182,7 +330,7 @@ func DeleteApp(id string) error {
 			return nil
 		}
 	}
-	return NotFoundError(id)
+	return NotFoundError{id, "app"}
 }
 
 func DownloadApp(id string) (*App, error) {
@@ -225,7 +373,11 @@ func DownloadApp(id string) (*App, error) {
 	a.Author = data["author"].(string)
 	a.PictureUrl = data["pictureUrl"].(string)
 	a.Description = data["description"].(string)
-	a.Configs = data["configs"].([]interface{})
+	a.Configs, err = kubelib.ParseConfig(data["configs"].([]interface{}))
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
 
 	session, err := mgo.Dial(mongo)
 	if err != nil {
@@ -293,7 +445,6 @@ func GetAllItem() ([]*Item, error) {
 			items = append(items, i)
 		}
 	}
-	fmt.Println(items)
 	return items, nil
 }
 
@@ -304,9 +455,8 @@ func GetItem(id string) (*Item, error) {
 
 	for _, i := range items {
 		if i.Id == id {
-			fmt.Println(i)
 			return i, nil
 		}
 	}
-	return nil, NotFoundError(id)
+	return nil, NotFoundError{id, "item"}
 }

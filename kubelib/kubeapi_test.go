@@ -1,4 +1,4 @@
-package kubeapi
+package kubelib
 
 import (
 	"bytes"
@@ -42,28 +42,40 @@ func TestCreateDeployment(t *testing.T) {
         }
       }
     }`)
-	resp := CreateDeployment(apiserver, "default", bytes.NewBuffer(jsonStr))
+	resp, err := CreateDeployment(apiserver, "default", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestReadDeployment(t *testing.T) {
-	resp := ReadDeployment(apiserver, "default", "deployment-example")
+	resp, err := ReadDeployment(apiserver, "default", "deployment-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestListDeployment(t *testing.T) {
-	resp := ListDeployment(apiserver, "default")
+	resp, err := ListDeployment(apiserver, "default")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestDeleteDeployment(t *testing.T) {
-	resp := DeleteDeployment(apiserver, "default", "deployment-example")
+	resp, err := DeleteDeployment(apiserver, "default", "deployment-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
@@ -91,28 +103,40 @@ func TestCreateService(t *testing.T) {
         "type": "LoadBalancer"
       }
     }`)
-	resp := CreateService(apiserver, "default", bytes.NewBuffer(jsonStr))
+	resp, err := CreateService(apiserver, "default", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestReadService(t *testing.T) {
-	resp := ReadService(apiserver, "default", "service-example")
+	resp, err := ReadService(apiserver, "default", "service-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestListService(t *testing.T) {
-	resp := ListService(apiserver, "default")
+	resp, err := ListService(apiserver, "default")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestDeleteService(t *testing.T) {
-	resp := DeleteService(apiserver, "default", "service-example")
+	resp, err := DeleteService(apiserver, "default", "service-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
@@ -137,28 +161,40 @@ func TestCreatePersistentVolumeClaim(t *testing.T) {
         }
       }
     }`)
-	resp := CreatePersistentVolumeClaim(apiserver, "default", bytes.NewBuffer(jsonStr))
+	resp, err := CreatePersistentVolumeClaim(apiserver, "default", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestReadPersistentVolumeClaim(t *testing.T) {
-	resp := ReadPersistentVolumeClaim(apiserver, "default", "pvc-example")
+	resp, err := ReadPersistentVolumeClaim(apiserver, "default", "pvc-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestListPersistentVolumeClaim(t *testing.T) {
-	resp := ListPersistentVolumeClaim(apiserver, "default")
+	resp, err := ListPersistentVolumeClaim(apiserver, "default")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestDeletePersistentVolumeClaim(t *testing.T) {
-	resp := DeletePersistentVolumeClaim(apiserver, "default", "pvc-example")
+	resp, err := DeletePersistentVolumeClaim(apiserver, "default", "pvc-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
@@ -173,28 +209,40 @@ func TestCreateNamespace(t *testing.T) {
         "name": "namespace-example"
       }
     }`)
-	resp := CreateNamespace(apiserver, bytes.NewBuffer(jsonStr))
+	resp, err := CreateNamespace(apiserver, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestReadNamespace(t *testing.T) {
-	resp := ReadNamespace(apiserver, "namespace-example")
+	resp, err := ReadNamespace(apiserver, "namespace-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestListNamespace(t *testing.T) {
-	resp := ListNamespace(apiserver)
+	resp, err := ListNamespace(apiserver)
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestDeleteNamespace(t *testing.T) {
-	resp := DeleteNamespace(apiserver, "namespace-example")
+	resp, err := DeleteNamespace(apiserver, "namespace-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
@@ -220,28 +268,40 @@ func TestCreatePersistentVolume(t *testing.T) {
         }
       }
     }`)
-	resp := CreatePersistentVolume(apiserver, bytes.NewBuffer(jsonStr))
+	resp, err := CreatePersistentVolume(apiserver, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestReadPersistentVolume(t *testing.T) {
-	resp := ReadPersistentVolume(apiserver, "pv-example")
+	resp, err := ReadPersistentVolume(apiserver, "pv-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestListPersistentVolume(t *testing.T) {
-	resp := ListPersistentVolume(apiserver)
+	resp, err := ListPersistentVolume(apiserver)
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}
 }
 
 func TestDeletePersistentVolume(t *testing.T) {
-	resp := DeletePersistentVolume(apiserver, "pv-example")
+	resp, err := DeletePersistentVolume(apiserver, "pv-example")
+	if err != nil {
+		t.Error(err)
+	}
 	if resp.StatusCode >= 400 {
 		t.Error("Expected", 200, "got", resp.StatusCode)
 	}

@@ -7,29 +7,38 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"platform/platformlib"
+	"platform"
 )
 
 func GetAllAppHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := platformlib.GetAllApp()
+	apps, err := platform.GetAllApp()
 	if err != nil {
 		log.Println(err)
 	}
+	log.Println(apps)
 }
 
 func GetAppHandler(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
-	_, err := platformlib.GetApp(id)
+	a, err := platform.GetApp(id)
 	if err != nil {
 		log.Println(err)
 	}
+	log.Println(a)
 }
 
-func StartAppHandler(w http.ResponseWriter, r *http.Request) {}
+func StartAppHandler(w http.ResponseWriter, r *http.Request) {
+	id := path.Base(r.URL.Path)
+	a, err := platform.StartApp(id)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(a)
+}
 
 func DeleteAppHandler(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
-	err := platformlib.DeleteApp(id)
+	err := platform.DeleteApp(id)
 	if err != nil {
 		log.Println(err)
 	}
@@ -37,25 +46,28 @@ func DeleteAppHandler(w http.ResponseWriter, r *http.Request) {
 
 func DownloadAppHandler(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
-	_, err := platformlib.DownloadApp(id)
+	a, err := platform.DownloadApp(id)
 	if err != nil {
 		log.Println(err)
 	}
+	log.Println(a)
 }
 
 func GetAllItemHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := platformlib.GetAllItem()
+	items, err := platform.GetAllItem()
 	if err != nil {
 		log.Println(err)
 	}
+	log.Println(items)
 }
 
 func GetItemHandler(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
-	_, err := platformlib.GetItem(id)
+	i, err := platform.GetItem(id)
 	if err != nil {
 		log.Println(err)
 	}
+	log.Println(i)
 }
 
 func GetAllServiceHandler(w http.ResponseWriter, r *http.Request) {}
@@ -68,14 +80,14 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/app", GetAllAppHandler).Methods("GET")
 	router.HandleFunc("/app/{id}", GetAppHandler).Methods("GET")
-	router.HandleFunc("/startapp", StartAppHandler).Methods("POST")
-	router.HandleFunc("/deleteapp/{id}", DeleteAppHandler).Methods("DELETE")
-	router.HandleFunc("/downloadapp/{id}", DownloadAppHandler).Methods("GET")
+	router.HandleFunc("/app/start/{id}", StartAppHandler).Methods("GET")
+	router.HandleFunc("/app/delete/{id}", DeleteAppHandler).Methods("DELETE")
+	router.HandleFunc("/app/download/{id}", DownloadAppHandler).Methods("GET")
 	router.HandleFunc("/item", GetAllItemHandler).Methods("GET")
 	router.HandleFunc("/item/{id}", GetItemHandler).Methods("GET")
 	router.HandleFunc("/service", GetAllServiceHandler).Methods("GET")
 	router.HandleFunc("/service/{id}", GetServiceHandler).Methods("GET")
-	router.HandleFunc("/deleteservice/{id}", DeleteServiceHandler).Methods("DELETE")
+	router.HandleFunc("/service/delete/{id}", DeleteServiceHandler).Methods("DELETE")
 
 	// Cross-origin resource sharing
 	handler := cors.New(cors.Options{

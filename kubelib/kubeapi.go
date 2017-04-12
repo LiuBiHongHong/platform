@@ -1,4 +1,4 @@
-package kubeapi
+package kubelib
 
 import (
 	"io"
@@ -12,19 +12,20 @@ import (
 //   https://kubernetes.io/docs/api-reference/v1.6/#deployment-v1beta1-apps
 
 // Create a Deployment
-func CreateDeployment(apiserver string, ns string, body io.Reader) *http.Response {
+func CreateDeployment(apiserver string, ns string, body io.Reader) (*http.Response, error) {
 	resp, err := http.Post(
 		apiserver+"/apis/apps/v1beta1/namespaces/"+ns+"/deployments",
 		"application/json",
 		body)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Delete a Deployment
-func DeleteDeployment(apiserver string, ns string, name string) *http.Response {
+func DeleteDeployment(apiserver string, ns string, name string) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(
 		"DELETE",
@@ -32,31 +33,35 @@ func DeleteDeployment(apiserver string, ns string, name string) *http.Response {
 		nil)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Read the specified Deployment
-func ReadDeployment(apiserver string, ns string, name string) *http.Response {
+func ReadDeployment(apiserver string, ns string, name string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/apis/apps/v1beta1/namespaces/" + ns + "/deployments/" + name)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // List or watch objects of kind Deployment
-func ListDeployment(apiserver string, ns string) *http.Response {
+func ListDeployment(apiserver string, ns string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/apis/apps/v1beta1/namespaces/" + ns + "/deployments")
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Service is a named abstraction of software service (for example, mysql)
@@ -68,19 +73,20 @@ func ListDeployment(apiserver string, ns string) *http.Response {
 //   https://kubernetes.io/docs/api-reference/v1.6/#service-v1-core
 
 // Create a Service
-func CreateService(apiserver string, ns string, body io.Reader) *http.Response {
+func CreateService(apiserver string, ns string, body io.Reader) (*http.Response, error) {
 	resp, err := http.Post(
 		apiserver+"/api/v1/namespaces/"+ns+"/services",
 		"application/json",
 		body)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Delete a Service
-func DeleteService(apiserver string, ns string, name string) *http.Response {
+func DeleteService(apiserver string, ns string, name string) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(
 		"DELETE",
@@ -88,31 +94,35 @@ func DeleteService(apiserver string, ns string, name string) *http.Response {
 		nil)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Read the specified Service
-func ReadService(apiserver string, ns string, name string) *http.Response {
+func ReadService(apiserver string, ns string, name string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/services/" + name)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // List or watch objects of kind Service
-func ListService(apiserver string, ns string) *http.Response {
+func ListService(apiserver string, ns string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/services")
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // PersistentVolumeClaim is a user's request for and claim to a persistent
@@ -122,19 +132,20 @@ func ListService(apiserver string, ns string) *http.Response {
 //   https://kubernetes.io/docs/api-reference/v1.6/#persistentvolumeclaim-v1-core
 
 // Create a PersistentVolumeClaim
-func CreatePersistentVolumeClaim(apiserver string, ns string, body io.Reader) *http.Response {
+func CreatePersistentVolumeClaim(apiserver string, ns string, body io.Reader) (*http.Response, error) {
 	resp, err := http.Post(
 		apiserver+"/api/v1/namespaces/"+ns+"/persistentvolumeclaims",
 		"application/json",
 		body)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Delete a PersistentVolumeClaim
-func DeletePersistentVolumeClaim(apiserver string, ns string, name string) *http.Response {
+func DeletePersistentVolumeClaim(apiserver string, ns string, name string) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(
 		"DELETE",
@@ -142,31 +153,35 @@ func DeletePersistentVolumeClaim(apiserver string, ns string, name string) *http
 		nil)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Read the specified PersistentVolumeClaim
-func ReadPersistentVolumeClaim(apiserver string, ns string, name string) *http.Response {
+func ReadPersistentVolumeClaim(apiserver string, ns string, name string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/persistentvolumeclaims/" + name)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // List or watch objects of kind PersistentVolumeClaim
-func ListPersistentVolumeClaim(apiserver string, ns string) *http.Response {
+func ListPersistentVolumeClaim(apiserver string, ns string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/persistentvolumeclaims")
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Namespace provides a scope for Names. Use of multiple namespaces is optional.
@@ -175,19 +190,20 @@ func ListPersistentVolumeClaim(apiserver string, ns string) *http.Response {
 //   https://kubernetes.io/docs/api-reference/v1.6/#namespace-v1-core
 
 // Create a Namespace
-func CreateNamespace(apiserver string, body io.Reader) *http.Response {
+func CreateNamespace(apiserver string, body io.Reader) (*http.Response, error) {
 	resp, err := http.Post(
 		apiserver+"/api/v1/namespaces",
 		"application/json",
 		body)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Delete a Namespace
-func DeleteNamespace(apiserver string, name string) *http.Response {
+func DeleteNamespace(apiserver string, name string) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(
 		"DELETE",
@@ -195,31 +211,35 @@ func DeleteNamespace(apiserver string, name string) *http.Response {
 		nil)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Read the specified Namespace
-func ReadNamespace(apiserver string, name string) *http.Response {
+func ReadNamespace(apiserver string, name string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + name)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // List or watch objects of kind Namespace
-func ListNamespace(apiserver string) *http.Response {
+func ListNamespace(apiserver string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces")
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // PersistentVolume (PV) is a storage resource provisioned by an administrator.
@@ -229,19 +249,20 @@ func ListNamespace(apiserver string) *http.Response {
 //   https://kubernetes.io/docs/api-reference/v1.6/#persistentvolume-v1-core
 
 // Create a PersistentVolume
-func CreatePersistentVolume(apiserver string, body io.Reader) *http.Response {
+func CreatePersistentVolume(apiserver string, body io.Reader) (*http.Response, error) {
 	resp, err := http.Post(
 		apiserver+"/api/v1/persistentvolumes",
 		"application/json",
 		body)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Delete a PersistentVolume
-func DeletePersistentVolume(apiserver string, name string) *http.Response {
+func DeletePersistentVolume(apiserver string, name string) (*http.Response, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(
 		"DELETE",
@@ -249,29 +270,33 @@ func DeletePersistentVolume(apiserver string, name string) *http.Response {
 		nil)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // Read the specified PersistentVolume
-func ReadPersistentVolume(apiserver string, name string) *http.Response {
+func ReadPersistentVolume(apiserver string, name string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/persistentvolumes/" + name)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
 
 // List or watch objects of kind PersistentVolume
-func ListPersistentVolume(apiserver string) *http.Response {
+func ListPersistentVolume(apiserver string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/persistentvolumes")
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return resp
+	return resp, nil
 }
