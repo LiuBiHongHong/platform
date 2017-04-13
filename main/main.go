@@ -15,8 +15,9 @@ func GetAllAppHandler(w http.ResponseWriter, r *http.Request) {
 	apps, err := platform.GetAllApp()
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Println(apps)
 	}
-	fmt.Println(apps)
 }
 
 func GetAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,8 +25,9 @@ func GetAppHandler(w http.ResponseWriter, r *http.Request) {
 	a, err := platform.GetApp(id)
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Println(a)
 	}
-	fmt.Println(a)
 }
 
 func StartAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,8 +35,9 @@ func StartAppHandler(w http.ResponseWriter, r *http.Request) {
 	a, err := platform.StartApp(id)
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Println(a)
 	}
-	fmt.Println(a)
 }
 
 func DeleteAppHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,16 +53,18 @@ func DownloadAppHandler(w http.ResponseWriter, r *http.Request) {
 	a, err := platform.DownloadApp(id)
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Println(a)
 	}
-	fmt.Println(a)
 }
 
 func GetAllItemHandler(w http.ResponseWriter, r *http.Request) {
 	items, err := platform.GetAllItem()
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Println(items)
 	}
-	fmt.Println(items)
 }
 
 func GetItemHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,8 +72,9 @@ func GetItemHandler(w http.ResponseWriter, r *http.Request) {
 	i, err := platform.GetItem(id)
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Println(i)
 	}
-	fmt.Println(i)
 }
 
 func GetAllServiceHandler(w http.ResponseWriter, r *http.Request) {}
@@ -91,12 +97,7 @@ func main() {
 	router.HandleFunc("/service/delete/{id}", DeleteServiceHandler).Methods("DELETE")
 
 	router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		a, _ := platform.GetApp("6af06892-369d-4f2a-9a63-668b9f9e2044")
-		t, err := platform.SetConfigField(a.Configs)
-		if err != nil {
-			log.Println(err)
-		}
-		fmt.Println(t)
+		platform.Test()
 	}).Methods("GET")
 
 	handler := cors.New(cors.Options{

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/fatih/structs"
 	"github.com/liubihonghong/platform/kubelib"
@@ -58,12 +59,12 @@ func (e ErrorDownloadImage) Error() string {
 // Error returns the formatted app start error.
 type ErrorStartApp struct {
 	id   string
-	kind string
+	body string
 }
 
 // ErrorStartApp denotes encountering an error while trying to start an app.
 func (e ErrorStartApp) Error() string {
-	return fmt.Sprintf("%s %s start failed", string(e.id), string(e.kind))
+	return fmt.Sprintf("%s start failed with response %s", string(e.id), string(e.body))
 }
 
 type App struct {
@@ -142,7 +143,7 @@ func GetAllApp() ([]*App, error) {
 				log.Println(err)
 				return nil, err
 			}
-			a.Configs, err = ParseConfig(data["configs"].([]interface{}))
+			a.Configs, err = parseConfig(data["configs"].([]interface{}))
 			if err != nil {
 				log.Println(err)
 				return nil, err
@@ -176,6 +177,10 @@ func StartApp(id string) (*App, error) {
 	for _, a := range apps {
 		if a.Id == id {
 			a.Status = 80
+			_, err := setConfig(a.Configs)
+			if err != nil {
+				log.Println(err)
+			}
 			for _, c := range a.Configs {
 				switch k := structs.Map(c)["Kind"].(string); k {
 				case "Deployment":
@@ -197,7 +202,13 @@ func StartApp(id string) (*App, error) {
 						return nil, err
 					}
 					if data["code"] != nil && data["code"].(float64) >= 400 {
-						return nil, ErrorStartApp{id, k}
+						var b bytes.Buffer
+						err := json.NewEncoder(&b).Encode(&data)
+						if err != nil {
+							log.Println(err)
+							return nil, err
+						}
+						return nil, ErrorStartApp{id, strings.Trim(b.String(), "\n")}
 					}
 				case "Service":
 					var b bytes.Buffer
@@ -218,7 +229,13 @@ func StartApp(id string) (*App, error) {
 						return nil, err
 					}
 					if data["code"] != nil && data["code"].(float64) >= 400 {
-						return nil, ErrorStartApp{id, k}
+						var b bytes.Buffer
+						err := json.NewEncoder(&b).Encode(&data)
+						if err != nil {
+							log.Println(err)
+							return nil, err
+						}
+						return nil, ErrorStartApp{id, strings.Trim(b.String(), "\n")}
 					}
 				case "PersistentVolumeClaim":
 					var b bytes.Buffer
@@ -239,9 +256,16 @@ func StartApp(id string) (*App, error) {
 						return nil, err
 					}
 					if data["code"] != nil && data["code"].(float64) >= 400 {
-						return nil, ErrorStartApp{id, k}
+						var b bytes.Buffer
+						err := json.NewEncoder(&b).Encode(&data)
+						if err != nil {
+							log.Println(err)
+							return nil, err
+						}
+						return nil, ErrorStartApp{id, strings.Trim(b.String(), "\n")}
 					}
 				case "Namespace":
+					// TODO: Skip if namespace exists.
 					var b bytes.Buffer
 					err := json.NewEncoder(&b).Encode(&c)
 					if err != nil {
@@ -259,8 +283,16 @@ func StartApp(id string) (*App, error) {
 						log.Println(err)
 						return nil, err
 					}
-					if data["code"] != nil && data["code"].(float64) >= 400 {
-						return nil, ErrorStartApp{id, k}
+					if data["code"] != nil && data["code"].(float64) == 409 {
+						fmt.Printf("%s already exists\n", k)
+					} else if data["code"] != nil && data["code"].(float64) >= 400 {
+						var b bytes.Buffer
+						err := json.NewEncoder(&b).Encode(&data)
+						if err != nil {
+							log.Println(err)
+							return nil, err
+						}
+						return nil, ErrorStartApp{id, strings.Trim(b.String(), "\n")}
 					}
 				case "PersistentVolume":
 					var b bytes.Buffer
@@ -281,7 +313,13 @@ func StartApp(id string) (*App, error) {
 						return nil, err
 					}
 					if data["code"] != nil && data["code"].(float64) >= 400 {
-						return nil, ErrorStartApp{id, k}
+						var b bytes.Buffer
+						err := json.NewEncoder(&b).Encode(&data)
+						if err != nil {
+							log.Println(err)
+							return nil, err
+						}
+						return nil, ErrorStartApp{id, strings.Trim(b.String(), "\n")}
 					}
 				}
 			}
@@ -368,7 +406,7 @@ func DownloadApp(id string) (*App, error) {
 	a.Author = data["author"].(string)
 	a.PictureUrl = data["pictureUrl"].(string)
 	a.Description = data["description"].(string)
-	a.Configs, err = ParseConfig(data["configs"].([]interface{}))
+	a.Configs, err = parseConfig(data["configs"].([]interface{}))
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -434,9 +472,7 @@ func GetAllItem() ([]*Item, error) {
 				log.Println(err)
 				return nil, err
 			}
-
 			// TODO: Set the status of downloaded items to 100.
-
 			items = append(items, i)
 		}
 	}

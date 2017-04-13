@@ -6,10 +6,8 @@ type Deployment struct {
 	Metadata   struct {
 		Name      string `json:"name"`
 		Namespace string `json:"namespace"`
-		// TODO: Change later
-		Labels struct {
-			App  string `json:"app"`
-			Type string `json:"type"`
+		Labels    struct {
+			Id string `json:"id"`
 		} `json:"labels"`
 	} `json:"metadata"`
 	Spec struct {
@@ -19,10 +17,8 @@ type Deployment struct {
 		Replicas *int `json:"replicas"`
 		Template struct {
 			Metadata struct {
-				// TODO: Change later
 				Labels struct {
-					App  string `json:"app"`
-					Tier string `json:"tier"`
+					Id string `json:"id"`
 				} `json:"labels"`
 			} `json:"metadata"`
 			Spec struct {
@@ -40,7 +36,7 @@ type Deployment struct {
 					} `json:"env"`
 					Args  []string `json:"args"`
 					Ports []struct {
-						ContainerPort *int   `json:"containerPort"`
+						ContainerPort int    `json:"containerPort"`
 						Name          string `json:"name"`
 					} `json:"ports"`
 					VolumeMounts []struct {
@@ -49,8 +45,11 @@ type Deployment struct {
 					} `json:"volumeMounts"`
 				} `json:"containers"`
 				Volumes []struct {
-					Name                  string `json:"name"`
-					PersistentVolumeClaim struct {
+					Name     string `json:"name"`
+					HostPath *struct {
+						Path string `json:"path"`
+					} `json:"hostPath"`
+					PersistentVolumeClaim *struct {
 						ClaimName string `json:"claimName"`
 					} `json:"persistentVolumeClaim"`
 				} `json:"volumes"`
@@ -65,10 +64,8 @@ type Service struct {
 	Metadata   struct {
 		Name      string `json:"name"`
 		Namespace string `json:"namespace"`
-		// TODO: Change later
-		Labels struct {
-			App  string `json:"app"`
-			Type string `json:"type"`
+		Labels    struct {
+			Id string `json:"id"`
 		} `json:"labels"`
 	} `json:"metadata"`
 	Spec struct {
@@ -78,10 +75,8 @@ type Service struct {
 			Protocol   string `json:"protocol"`
 			Name       string `json:"name"`
 		} `json:"ports"`
-		// TODO: Change later
 		Selector struct {
-			App  string `json:"app"`
-			Tier string `json:"tier"`
+			Id string `json:"id"`
 		} `json:"selector"`
 		ClusterIP string `json:"clusterIP"`
 		Type      string `json:"type"`
@@ -94,9 +89,8 @@ type PersistentVolumeClaim struct {
 	Metadata   struct {
 		Name      string `json:"name"`
 		Namespace string `json:"namespace"`
-		// TODO: Change later
-		Labels struct {
-			App string `json:"app"`
+		Labels    struct {
+			Id string `json:"id"`
 		} `json:"labels"`
 	} `json:"metadata"`
 	Spec struct {
@@ -121,11 +115,9 @@ type PersistentVolume struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
-		Name string `json:"name"`
-		// TODO: Change later
+		Name   string `json:"name"`
 		Labels struct {
-			App  string `json:"app"`
-			Type string `json:"type"`
+			Id string `json:"id"`
 		} `json:"labels"`
 	} `json:"metadata"`
 	Spec struct {

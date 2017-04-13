@@ -21,15 +21,15 @@ func (e ErrorParseConfig) Error() string {
 }
 
 // Error returns the config field setting error.
-type ErrorSetConfigField string
+type ErrorSetConfig string
 
-// ErrorSetConfigField denotes encountering an error while trying to setting
-// fields of starting configs.
-func (e ErrorSetConfigField) Error() string {
-	return fmt.Sprintf("%s config parsing failed", string(e))
+// ErrorSetConfig denotes encountering an error while trying to set starting
+// configs.
+func (e ErrorSetConfig) Error() string {
+	return fmt.Sprintf("%s config setting failed", string(e))
 }
 
-func ParseConfig(data []interface{}) ([]interface{}, error) {
+func parseConfig(data []interface{}) ([]interface{}, error) {
 	var cs []interface{}
 	cs = make([]interface{}, 0)
 	for _, c := range data {
@@ -81,38 +81,60 @@ func ParseConfig(data []interface{}) ([]interface{}, error) {
 	return cs, nil
 }
 
-func SetConfigField(cs []interface{}) ([]interface{}, error) {
-	guid := xid.New()
-	fmt.Printf("%q\n", guid.String())
+func setConfig(cs []interface{}) ([]interface{}, error) {
+	sid := xid.New().String()
+	pvcl := make([]string, 0)
 
 	for i, c := range cs {
 		switch k := structs.Map(c)["Kind"].(string); k {
 		case "Deployment":
 			tmp := c.(kubelib.Deployment)
-			tmp.Metadata.Name = "@@@"
+			tmp.Metadata.Name = sid
+			tmp.Metadata.Labels.Id = sid
+			// Set ClaimName field for the deployment
+			for _, v := range tmp.Spec.Template.Spec.Volumes {
+				if v.PersistentVolumeClaim != nil {
+					if len(pvcl) == 0 {
+						return nil, ErrorSetConfig("ClaimName")
+					}
+					v.PersistentVolumeClaim.ClaimName = pvcl[0]
+					pvcl = pvcl[1:]
+				}
+			}
 			cs[i] = tmp
 		case "Service":
 			tmp := c.(kubelib.Service)
-			tmp.Metadata.Name = "^^^"
+			tmp.Metadata.Name = sid
+			tmp.Metadata.Labels.Id = sid
+			// Set Port field for the service
+			// for _, p := range tmp.Spec.Ports {
+			// 	fp, err := getFreePort()
+			// 	if fp == 0 || err != nil {
+			// 		log.Println(err)
+			// 		return nil, ErrorSetConfig("Port")
+			// 	}
+			// 	*p.Port = fp
+			// }
 			cs[i] = tmp
 		case "PersistentVolumeClaim":
 			tmp := c.(kubelib.PersistentVolumeClaim)
-			tmp.Metadata.Name = "!!!"
+			pvcid := xid.New().String()
+			tmp.Metadata.Name = pvcid
+			tmp.Metadata.Labels.Id = sid
 			cs[i] = tmp
-		case "Namespace":
-			tmp := c.(kubelib.Namespace)
-			tmp.Metadata.Name = "&&&"
-			cs[i] = tmp
+			pvcl = append(pvcl, pvcid)
 		case "PersistentVolume":
 			tmp := c.(kubelib.PersistentVolume)
-			tmp.Metadata.Name = "***"
+			pvid := xid.New().String()
+			tmp.Metadata.Name = pvid
+			tmp.Metadata.Labels.Id = sid
 			cs[i] = tmp
 		}
 	}
 	return cs, nil
 }
 
-func GetFreePort() (int, error) {
+func getFreePort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:3000")
 	if err != nil {
 		log.Println(err)
