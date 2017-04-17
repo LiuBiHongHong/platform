@@ -44,7 +44,7 @@ func (e ErrorNotFound) Error() string {
 	return fmt.Sprintf("%s %s not found", string(e.id), string(e.kind))
 }
 
-// Error returns the formatted docker image download error.
+// Error returns the formatted docker image downloading error.
 type ErrorDownloadImage struct {
 	id    string
 	image string
@@ -56,7 +56,7 @@ func (e ErrorDownloadImage) Error() string {
 	return fmt.Sprintf("%s %s download failed", string(e.id), string(e.image))
 }
 
-// Error returns the formatted app start error.
+// Error returns the formatted app starting error.
 type ErrorStartApp struct {
 	id   string
 	body string
@@ -85,7 +85,7 @@ type App struct {
 	// 77: error happened when starting a service
 	// 50: on deleting
 	// 22: error happened when deleting
-	// 0: initialized
+	// 1: initialized
 	Status int `json:"status"`
 }
 
@@ -102,20 +102,20 @@ type Item struct {
 	// 100: has been already downloaded
 	// 80: on downloading
 	// 77: error happened when downloading
-	// 0: initialized
+	// 1: initialized
 	Status int `json:"status"`
 }
 
 func NewApp() *App {
 	a := new(App)
 	a.Configs = make([]interface{}, 0)
-	a.Status = 0
+	a.Status = 1
 	return a
 }
 
 func NewItem() *Item {
 	i := new(Item)
-	i.Status = 0
+	i.Status = 1
 	return i
 }
 
@@ -190,7 +190,7 @@ func StartApp(id string) (*App, error) {
 						log.Println(err)
 						return nil, err
 					}
-					resp, err := kubelib.CreateDeployment(apiserver, c.(kubelib.Deployment).Metadata.Namespace, &b)
+					resp, err := kubelib.CreateDeployment(apiserver, c.(kubelib.DeploymentConfig).Metadata.Namespace, &b)
 					if err != nil {
 						log.Println(err)
 						return nil, err
@@ -217,7 +217,7 @@ func StartApp(id string) (*App, error) {
 						log.Println(err)
 						return nil, err
 					}
-					resp, err := kubelib.CreateService(apiserver, c.(kubelib.Service).Metadata.Namespace, &b)
+					resp, err := kubelib.CreateService(apiserver, c.(kubelib.ServiceConfig).Metadata.Namespace, &b)
 					if err != nil {
 						log.Println(err)
 						return nil, err
@@ -244,7 +244,7 @@ func StartApp(id string) (*App, error) {
 						log.Println(err)
 						return nil, err
 					}
-					resp, err := kubelib.CreatePersistentVolumeClaim(apiserver, c.(kubelib.PersistentVolumeClaim).Metadata.Namespace, &b)
+					resp, err := kubelib.CreatePersistentVolumeClaim(apiserver, c.(kubelib.PersistentVolumeClaimConfig).Metadata.Namespace, &b)
 					if err != nil {
 						log.Println(err)
 						return nil, err

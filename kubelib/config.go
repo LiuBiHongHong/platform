@@ -1,6 +1,6 @@
 package kubelib
 
-type Deployment struct {
+type DeploymentConfig struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
@@ -58,7 +58,7 @@ type Deployment struct {
 	} `json:"spec"`
 }
 
-type Service struct {
+type ServiceConfig struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
@@ -83,7 +83,7 @@ type Service struct {
 	} `json:"spec"`
 }
 
-type PersistentVolumeClaim struct {
+type PersistentVolumeClaimConfig struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
@@ -103,7 +103,7 @@ type PersistentVolumeClaim struct {
 	} `json:"spec"`
 }
 
-type Namespace struct {
+type NamespaceConfig struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
@@ -111,7 +111,7 @@ type Namespace struct {
 	} `json:"metadata"`
 }
 
-type PersistentVolume struct {
+type PersistentVolumeConfig struct {
 	ApiVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 	Metadata   struct {
@@ -124,8 +124,9 @@ type PersistentVolume struct {
 		Capacity struct {
 			Storage string `json:"storage"`
 		} `json:"capacity"`
-		AccessModes []string `json:"accessModes"`
-		HostPath    struct {
+		AccessModes                   []string `json:"accessModes"`
+		PersistentVolumeReclaimPolicy string   `json:"persistentVolumeReclaimPolicy"`
+		HostPath                      struct {
 			Path string `json:"path"`
 		} `json:"hostPath"`
 	} `json:"spec"`

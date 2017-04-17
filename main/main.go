@@ -77,9 +77,24 @@ func GetItemHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetAllServiceHandler(w http.ResponseWriter, r *http.Request) {}
+func GetAllServiceHandler(w http.ResponseWriter, r *http.Request) {
+	services, err := platform.GetAllService()
+	if err != nil {
+		log.Println(err)
+	} else {
+		fmt.Println(services)
+	}
+}
 
-func GetServiceHandler(w http.ResponseWriter, r *http.Request) {}
+func GetServiceHandler(w http.ResponseWriter, r *http.Request) {
+	id := path.Base(r.URL.Path)
+	s, err := platform.GetService(id)
+	if err != nil {
+		log.Println(err)
+	} else {
+		fmt.Println(s)
+	}
+}
 
 func DeleteServiceHandler(w http.ResponseWriter, r *http.Request) {}
 
@@ -95,10 +110,6 @@ func main() {
 	router.HandleFunc("/service", GetAllServiceHandler).Methods("GET")
 	router.HandleFunc("/service/{id}", GetServiceHandler).Methods("GET")
 	router.HandleFunc("/service/delete/{id}", DeleteServiceHandler).Methods("DELETE")
-
-	router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		platform.Test()
-	}).Methods("GET")
 
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},

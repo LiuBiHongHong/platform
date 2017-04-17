@@ -6,6 +6,40 @@ import (
 	"net/http"
 )
 
+type Deployment struct{}
+
+type Service struct {
+	Metadata struct {
+		Name              string `json:"name"`
+		Namespace         string `json:"namespace"`
+		Uid               string `json:"uid"`
+		ResourceVersion   string `json:"resourceVersion"`
+		CreationTimestamp string `json:"creationTimestamp"`
+		Labels            struct {
+			Id string `json:"id"`
+		} `json:"labels"`
+	} `json:"metadata"`
+	Spec struct {
+		Ports []struct {
+			TargetPort int    `json:"targetPort"`
+			Port       int    `json:"port"`
+			Protocol   string `json:"protocol"`
+			Name       string `json:"name"`
+		} `json:"ports"`
+		Selector struct {
+			Id string `json:"id"`
+		} `json:"selector"`
+		ClusterIP string `json:"clusterIP"`
+		Type      string `json:"type"`
+	} `json:"spec"`
+}
+
+type PersistentVolumeClaim struct{}
+
+type Namespace struct{}
+
+type PersistentVolume struct{}
+
 // Deployment enables declarative updates for Pods and ReplicaSets.
 //
 // For more information, please check the official documentation:
@@ -118,6 +152,16 @@ func ReadService(apiserver string, ns string, name string) (*http.Response, erro
 // List or watch objects of kind Service
 func ListService(apiserver string, ns string) (*http.Response, error) {
 	resp, err := http.Get(apiserver + "/api/v1/namespaces/" + ns + "/services")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return resp, nil
+}
+
+// List or watch objects of kind Service in all namespaces
+func ListAllService(apiserver string) (*http.Response, error) {
+	resp, err := http.Get(apiserver + "/api/v1/services")
 	if err != nil {
 		log.Println(err)
 		return nil, err

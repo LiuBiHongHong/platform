@@ -3,6 +3,8 @@ package kubelib
 import (
 	"bytes"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -43,42 +45,26 @@ func TestCreateDeployment(t *testing.T) {
       }
     }`)
 	resp, err := CreateDeployment(apiserver, "default", bytes.NewBuffer(jsonStr))
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 201, resp.StatusCode)
 }
 
 func TestReadDeployment(t *testing.T) {
 	resp, err := ReadDeployment(apiserver, "default", "deployment-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestListDeployment(t *testing.T) {
 	resp, err := ListDeployment(apiserver, "default")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestDeleteDeployment(t *testing.T) {
 	resp, err := DeleteDeployment(apiserver, "default", "deployment-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestCreateService(t *testing.T) {
@@ -104,42 +90,32 @@ func TestCreateService(t *testing.T) {
       }
     }`)
 	resp, err := CreateService(apiserver, "default", bytes.NewBuffer(jsonStr))
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 201, resp.StatusCode)
 }
 
 func TestReadService(t *testing.T) {
 	resp, err := ReadService(apiserver, "default", "service-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestListService(t *testing.T) {
 	resp, err := ListService(apiserver, "default")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
+}
+
+func TestListAllService(t *testing.T) {
+	resp, err := ListAllService(apiserver)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestDeleteService(t *testing.T) {
 	resp, err := DeleteService(apiserver, "default", "service-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestCreatePersistentVolumeClaim(t *testing.T) {
@@ -162,42 +138,26 @@ func TestCreatePersistentVolumeClaim(t *testing.T) {
       }
     }`)
 	resp, err := CreatePersistentVolumeClaim(apiserver, "default", bytes.NewBuffer(jsonStr))
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 201, resp.StatusCode)
 }
 
 func TestReadPersistentVolumeClaim(t *testing.T) {
 	resp, err := ReadPersistentVolumeClaim(apiserver, "default", "pvc-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestListPersistentVolumeClaim(t *testing.T) {
 	resp, err := ListPersistentVolumeClaim(apiserver, "default")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestDeletePersistentVolumeClaim(t *testing.T) {
 	resp, err := DeletePersistentVolumeClaim(apiserver, "default", "pvc-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestCreateNamespace(t *testing.T) {
@@ -210,42 +170,26 @@ func TestCreateNamespace(t *testing.T) {
       }
     }`)
 	resp, err := CreateNamespace(apiserver, bytes.NewBuffer(jsonStr))
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 201, resp.StatusCode)
 }
 
 func TestReadNamespace(t *testing.T) {
 	resp, err := ReadNamespace(apiserver, "namespace-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestListNamespace(t *testing.T) {
 	resp, err := ListNamespace(apiserver)
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestDeleteNamespace(t *testing.T) {
 	resp, err := DeleteNamespace(apiserver, "namespace-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestCreatePersistentVolume(t *testing.T) {
@@ -269,40 +213,24 @@ func TestCreatePersistentVolume(t *testing.T) {
       }
     }`)
 	resp, err := CreatePersistentVolume(apiserver, bytes.NewBuffer(jsonStr))
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 201, resp.StatusCode)
 }
 
 func TestReadPersistentVolume(t *testing.T) {
 	resp, err := ReadPersistentVolume(apiserver, "pv-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestListPersistentVolume(t *testing.T) {
 	resp, err := ListPersistentVolume(apiserver)
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestDeletePersistentVolume(t *testing.T) {
 	resp, err := DeletePersistentVolume(apiserver, "pv-example")
-	if err != nil {
-		t.Error(err)
-	}
-	if resp.StatusCode >= 400 {
-		t.Error("Expected", 200, "got", resp.StatusCode)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }

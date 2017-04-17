@@ -1,9 +1,24 @@
 package platform
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+
+	"github.com/liubihonghong/platform/kubelib"
+	"github.com/mitchellh/mapstructure"
 )
+
+// Error returns the formatted service deletion error.
+type ErrorDeleteService struct {
+	id   string
+	body string
+}
+
+// ErrorDeleteService denotes encountering an error while trying to delete an app.
+func (e ErrorDeleteService) Error() string {
+	return fmt.Sprintf("%s delete failed with response %s", string(e.id), string(e.body))
+}
 
 var (
 	// The slice containing all services on the machine
@@ -21,33 +36,64 @@ type Service struct {
 
 	// Status code of an app
 	//
-	// 0: initialized
+	// 100: ready
+	// 98: have not been visited
+	// 1: initialized
 	Status int `json:"status"`
 }
 
 func NewService() *Service {
 	s := new(Service)
-	s.Status = 0
+	s.Status = 1
 	return s
 }
 
-func GetAllService() {
-	// TODO
-}
-
-func GetService() {
-	// TODO
-}
-
-func DeleteService() {
-	// TODO
-}
-
-func Test() {
-	a, _ := GetApp("6af06892-369d-4f2a-9a63-668b9f9e2044")
-	t, err := setConfig(a.Configs)
-	if err != nil {
-		log.Println(err)
+func GetAllService() ([]*Service, error) {
+	if len(services) == 0 {
+		resp, err := kubelib.ListAllService(apiserver)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		var data map[string]interface{}
+		dec := json.NewDecoder(resp.Body)
+		if err := dec.Decode(&data); err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		for _, item := range data["items"].([]interface{}) {
+			var svc kubelib.Service
+			err := mapstructure.Decode(item, &svc)
+			if err != nil {
+				log.Println(err)
+				return nil, err
+			}
+			var s *Service
+			s = NewService()
+			s.Id = svc.Metadata.Name
+			s.App = svc.Metadata.Namespace
+			// TODO: Set service port.
+			services = append(services, s)
+		}
 	}
-	fmt.Println(t)
+	return services, nil
+}
+
+func GetService(id string) (*Service, error) {
+	if len(services) == 0 {
+		GetAllService()
+	}
+
+	for _, s := range services {
+		if s.Id == id {
+			s.Status = 100
+			return s, nil
+		}
+	}
+	return nil, ErrorNotFound{id, "service"}
+}
+
+func DeleteService() error {
+	// TODO
+	return nil
 }

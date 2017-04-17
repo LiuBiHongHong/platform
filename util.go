@@ -35,7 +35,7 @@ func parseConfig(data []interface{}) ([]interface{}, error) {
 	for _, c := range data {
 		switch k := c.(map[string]interface{})["kind"].(string); k {
 		case "Deployment":
-			var deploy kubelib.Deployment
+			var deploy kubelib.DeploymentConfig
 			err := mapstructure.Decode(c, &deploy)
 			if err != nil {
 				log.Println(err)
@@ -43,7 +43,7 @@ func parseConfig(data []interface{}) ([]interface{}, error) {
 			}
 			cs = append(cs, deploy)
 		case "Service":
-			var svc kubelib.Service
+			var svc kubelib.ServiceConfig
 			err := mapstructure.Decode(c, &svc)
 			if err != nil {
 				log.Println(err)
@@ -51,7 +51,7 @@ func parseConfig(data []interface{}) ([]interface{}, error) {
 			}
 			cs = append(cs, svc)
 		case "PersistentVolumeClaim":
-			var pvc kubelib.PersistentVolumeClaim
+			var pvc kubelib.PersistentVolumeClaimConfig
 			err := mapstructure.Decode(c, &pvc)
 			if err != nil {
 				log.Println(err)
@@ -59,7 +59,7 @@ func parseConfig(data []interface{}) ([]interface{}, error) {
 			}
 			cs = append(cs, pvc)
 		case "Namespace":
-			var ns kubelib.Namespace
+			var ns kubelib.NamespaceConfig
 			err := mapstructure.Decode(c, &ns)
 			if err != nil {
 				log.Println(err)
@@ -67,7 +67,7 @@ func parseConfig(data []interface{}) ([]interface{}, error) {
 			}
 			cs = append(cs, ns)
 		case "PersistentVolume":
-			var pv kubelib.PersistentVolume
+			var pv kubelib.PersistentVolumeConfig
 			err := mapstructure.Decode(c, &pv)
 			if err != nil {
 				log.Println(err)
@@ -88,7 +88,7 @@ func setConfig(cs []interface{}) ([]interface{}, error) {
 	for i, c := range cs {
 		switch k := structs.Map(c)["Kind"].(string); k {
 		case "Deployment":
-			tmp := c.(kubelib.Deployment)
+			tmp := c.(kubelib.DeploymentConfig)
 			tmp.Metadata.Name = sid
 			tmp.Metadata.Labels.Id = sid
 			// Set ClaimName field for the deployment
@@ -103,28 +103,19 @@ func setConfig(cs []interface{}) ([]interface{}, error) {
 			}
 			cs[i] = tmp
 		case "Service":
-			tmp := c.(kubelib.Service)
+			tmp := c.(kubelib.ServiceConfig)
 			tmp.Metadata.Name = sid
 			tmp.Metadata.Labels.Id = sid
-			// Set Port field for the service
-			// for _, p := range tmp.Spec.Ports {
-			// 	fp, err := getFreePort()
-			// 	if fp == 0 || err != nil {
-			// 		log.Println(err)
-			// 		return nil, ErrorSetConfig("Port")
-			// 	}
-			// 	*p.Port = fp
-			// }
 			cs[i] = tmp
 		case "PersistentVolumeClaim":
-			tmp := c.(kubelib.PersistentVolumeClaim)
+			tmp := c.(kubelib.PersistentVolumeClaimConfig)
 			pvcid := xid.New().String()
 			tmp.Metadata.Name = pvcid
 			tmp.Metadata.Labels.Id = sid
 			cs[i] = tmp
 			pvcl = append(pvcl, pvcid)
 		case "PersistentVolume":
-			tmp := c.(kubelib.PersistentVolume)
+			tmp := c.(kubelib.PersistentVolumeConfig)
 			pvid := xid.New().String()
 			tmp.Metadata.Name = pvid
 			tmp.Metadata.Labels.Id = sid
